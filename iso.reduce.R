@@ -2,10 +2,10 @@
 iso.reduce = function(folder.name, template.name) {
   
   # Source data reduction functions
-  source('Reduction functions/iso.combine.R')
-  source('Reduction functions/iso.loop.R')
-  source('Reduction functions/drift.correct.R')
-  source('Reduction functions/bias.correct.R')
+  source('iso.combine.R')
+  source('iso.loop.R')
+  source('drift.correct.R')
+  source('bias.correct.R')
   
   # Names/path of files to be analyzed
   path.full = paste('Raw data', folder.name, sep = '/')

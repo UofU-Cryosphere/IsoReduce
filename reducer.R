@@ -6,11 +6,11 @@
   # The third line sets the working directory, corresponding to the location of this script file
 folder.name = 'house_calib_2017Aug08'
 template.name = 'house.calibrate'
-setwd('/Volumes/WARP DRIVE/Research/Lab Management/Picarro/IsotopeData/')
+# setwd('/Volumes/WARP DRIVE/Research/Lab Management/Picarro/IsotopeData/')
 
 
 
 
 # Sources and runs the isotope reduction functions based on input variables above
-source('Reduction functions/iso.reduce.R')
+source('iso.reduce.R')
 data = iso.reduce(folder.name, template.name)
