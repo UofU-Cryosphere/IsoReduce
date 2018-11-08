@@ -2,12 +2,11 @@
 
 # Working directory must be at the top level of the repository
 script.dir = dirname(parent.frame(2)$ofile)
-setwd(dirname(script.dir))
-#setwd('/Volumes/WARP DRIVE/Research/Lab Management/Picarro/IsotopeData/')
+setwd(script.dir)
 
 # Isotope files and corresponding tray templates to loop through in script
 files = list('Init_calib_17Oct2016', 'Init_calib2_20Jan2017', 'house_calib_2017Aug08', 
-               'house_calib_2017Aug17')
+             'house_calib_2017Aug17')
 templates = list('Init.calib.17Oct2016', 'Init.calib2.20Jan2017', 'house.calibrate',
                  'house.calibrate')
 
@@ -20,28 +19,27 @@ HOTH.all = list()
 WAIS.all = list()
 
 for (i in 1:length(files)) {
-# folder.name is the directory name containing the raw isotope data (within the 'Raw data' folder)
-# template.name is the name of the .Rdata template file within the 'Tray templates' folder
-folder.name = unlist(files[i])
-template.name = unlist(templates[i])
-
-# Sources and runs the isotope reduction functions based on input variables above
-source('Reduction functions/iso.reduce.R')
-data = iso.reduce(folder.name, template.name)
-
-# Load template-specific data (location of standards/QC, standards values, etc.)
-template.path = paste('Tray templates/', template.name, '.Rdata', sep = '')
-load(template.path)
-
-# Primary standards
-P.mid.all[[i]] = data[unlist(STND.loc[1]),]
-P.zero.all[[i]] = data[unlist(STND.loc[2]),]
-P.depl.all[[i]] = data[unlist(STND.loc[3]),]
-
-# Lab Standards
-WAIS.all[[i]] = data[WAIS,]
-CIFA.all[[i]]= data[CIFA,]
-HOTH.all[[i]] = data[HOTH,]
+  # folder.name = unlist(files[i])
+  # template.name = unlist(templates[i])
+  files.path_i = choose.dir(caption = "Select folder containing raw isotope data")
+  template.path_i = choose.files(caption = 'Select sample tray template file')
+  
+  # Sources and runs the isotope reduction functions based on input variables above
+  source('iso.reduce.R')
+  data = iso.reduce(files.path_i, template.path_i)
+  
+  # Load template-specific data (location of standards/QC, standards values, etc.)
+  load(template.path_i)
+  
+  # Primary standards
+  P.mid.all[[i]] = data[unlist(STND.loc[1]),]
+  P.zero.all[[i]] = data[unlist(STND.loc[2]),]
+  P.depl.all[[i]] = data[unlist(STND.loc[3]),]
+  
+  # Lab Standards
+  WAIS.all[[i]] = data[WAIS,]
+  CIFA.all[[i]]= data[CIFA,]
+  HOTH.all[[i]] = data[HOTH,]
 }
 
 # Combine lists into dataframes for each isotope set

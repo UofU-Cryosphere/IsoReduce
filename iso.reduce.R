@@ -1,5 +1,5 @@
 # Function for reducing isotope data within a given folder, based on a given tray template
-iso.reduce = function(folder.name, template.name) {
+iso.reduce = function(files.path, template.path) {
   
   # Source data reduction functions
   source('iso.combine.R')
@@ -8,8 +8,7 @@ iso.reduce = function(folder.name, template.name) {
   source('bias.correct.R')
   
   # Names/path of files to be analyzed
-  path.full = paste('Raw data', folder.name, sep = '/')
-  files = list.files(path.full, pattern = '.csv', full.names = TRUE)
+  files = list.files(files.path, pattern = '.csv', full.names = TRUE)
   
   # Concatenates an arbitrary number of Picarro .csv files into a single R dataframe
   data.all = iso.combine(files)
@@ -18,7 +17,6 @@ iso.reduce = function(folder.name, template.name) {
   data.reduce = iso.loop(data.all)
   
   # Load template-specific data (location of standards/QC, standards values, etc.)
-  template.path = paste('Tray templates/', template.name, '.Rdata', sep = '')
   load(template.path)
   
   # Drift correct isotope data

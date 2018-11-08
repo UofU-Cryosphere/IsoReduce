@@ -3,7 +3,7 @@
 iso.loop = function(data.all) {
   
   # Source the memory correction function
-  source('Reduction functions/memory.correct.R')
+  source('memory.correct.R')
   
   # Preallocate arrays for reduced data
   Sample.port = numeric()
@@ -14,7 +14,7 @@ iso.loop = function(data.all) {
   dD.predict = numeric()
   dD.sigma = numeric()
   
-   # Define starting values for use in for loop
+  # Define starting values for use in for loop
   matrix.row = 1
   sample.nr = data.all$Sample[1]
   sample.row = 1

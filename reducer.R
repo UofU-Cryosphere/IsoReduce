@@ -1,16 +1,17 @@
 # Script used to reduce isotope data based on the custom function 'iso.reduce'
 
-# These are variables to update 
-  # folder.name is the directory name containing the raw isotope data (within the 'Raw data' folder)
-  # template.name is the name of the .Rdata template file within the 'Tray templates' folder
-  # The third line sets the working directory, corresponding to the location of this script file
-folder.name = 'house_calib_2017Aug08'
-template.name = 'house.calibrate'
-# setwd('/Volumes/WARP DRIVE/Research/Lab Management/Picarro/IsotopeData/')
 
 
+# Set working directory to location of this source file (the 'reducer.R' wrapper script)
+script.dir = dirname(parent.frame(2)$ofile)
+setwd(script.dir)
 
+# Input the directory containing the raw isotope data (subdirectory of 'Raw data')
+files.path = choose.dir(caption = "Select folder containing raw isotope data")
 
-# Sources and runs the isotope reduction functions based on input variables above
+# Input the .Rdata file that contains the tray template sample/standards locations
+template.path = choose.files(caption = 'Select sample tray template file')
+
+# Source and run the isotope reduction functions on given input files
 source('iso.reduce.R')
-data = iso.reduce(folder.name, template.name)
+data = iso.reduce(files.path, template.path)
