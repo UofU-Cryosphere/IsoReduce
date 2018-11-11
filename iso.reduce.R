@@ -6,6 +6,7 @@ iso.reduce = function(files.path, template.path) {
   source('iso.loop.R')
   source('drift.correct.R')
   source('bias.correct.R')
+  source('template.read.R')
   
   # Names/path of files to be analyzed
   files = list.files(files.path, pattern = '.csv', full.names = TRUE)
@@ -17,7 +18,11 @@ iso.reduce = function(files.path, template.path) {
   data.reduce = iso.loop(data.all)
   
   # Load template-specific data (location of standards/QC, standards values, etc.)
-  load(template.path)
+  template.data = template.read(template.path)
+  STND.loc = template.data[[1]]
+  STND.val = template.data[[2]]
+  QC.loc = template.data[[3]]
+  QC.val = template.data[[4]]
   
   # Drift correct isotope data
   drift.correction = drift.correct(data.reduce, QC.loc)
