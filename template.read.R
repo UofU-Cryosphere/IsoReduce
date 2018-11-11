@@ -18,7 +18,8 @@ template.read = function(template.path) {
   STND.names = character()
   STND.val = numeric()
   for (i in 1:length(STND.loc)) {
-    STND.loc[[i]] = template.data$Port_num[which(template.data$Sample_num == stnd.unique[i])]
+    STND.loc[[i]] = as.integer(template.data$Port_num[which(template.data$Sample_num == 
+                                                              stnd.unique[i])])
     STND.names = c(STND.names, 
                    template.data$Sample_ID[which(template.data$Sample_num == stnd.unique[i])[1]])
     stnd.d180 = mean(template.data$d18O[which(template.data$Sample_num == stnd.unique[i])])
@@ -37,7 +38,7 @@ template.read = function(template.path) {
   QC.idx = grep("QC", template.data$Sample_num)
   
   # Get port locations of all QC samples
-  QC.loc = template.data$Port_num[QC.idx]
+  QC.loc = as.integer(template.data$Port_num[QC.idx])
   
   # Get true isotope values for all QC samples
   QC.val = cbind(template.data$d18O[QC.idx], template.data$dD[QC.idx])

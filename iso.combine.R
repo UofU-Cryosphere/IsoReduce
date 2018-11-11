@@ -10,9 +10,11 @@ iso.combine = function(...) {
       data.run = rbind(data.run, data.add)
     }
   }
-  data = data.frame(data.run$Timestamp.Mean, data.run$Sample, data.run$Inj.Nr, 
-                    data.run$d.18_16.Mean, data.run$d.D_H.Mean)
-  names(data) = c('Timestamp', 'Sample', 'Inj.Nr', 'd.18_16.Mean', 'd.D_H.Mean')
+  data = data.frame(Time = strptime(as.character(data.run$Time.Code), format = "%Y/%m/%d %H:%M:%S"), 
+                    Sample = as.integer(data.run$Sample), Inj.Nr = as.integer(data.run$Inj.Nr), 
+                    d.18_16.Mean = as.numeric(data.run$d.18_16.Mean), 
+                    d.D_H.Mean = as.numeric(data.run$d.D_H.Mean))
+  names(data) = c('Time', 'Sample', 'Inj.Nr', 'd.18_16.Mean', 'd.D_H.Mean')
   
   # Removes missed injections (in the future this will change to flag missed injections)
   data = data[!(is.na(data[,1])),]

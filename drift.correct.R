@@ -1,33 +1,36 @@
 ## Custom function to correct drift in isotope values due to intra-run instrument drift
-drift.correct = function(iso.data, QC) {
+drift.correct = function(iso.data, STNDs) {
   
   # Preallocate data frames for the value of the slope of the instrument drift for each of the 
   # isotope standards
   d18O.differential = data.frame(val = as.numeric(), slope = as.numeric())
   dD.differential = data.frame(val = as.numeric(), slope = as.numeric())
   
-  for (i in 1:length(QC)) {
+  for (i in 1:length(STNDs)) {
     
     # Iteratively extract indices for the different standards in the data set
-    data.QC = iso.data[unlist(QC[i]),]
-    data.QC$Sample.sequence = unlist(QC[i])
+    stnd.idx = match(STNDs[[i]], iso.data$Sample.port)
+    data.stnd = iso.data[stnd.idx,]
+    data.stnd$Sample.sequence = stnd.idx
+    # data.QC = iso.data[unlist(QC[i]),]
+    # data.QC$Sample.sequence = unlist(QC[i])
     
     # Iteratively estimate the drift coefficient (the slope) for each standard
-    d18O.drift.trend = lm(d18O.predict ~ Sample.sequence, data = data.QC)
+    d18O.drift.trend = lm(d18O.predict ~ Sample.port, data = data.stnd)
     d18O.drift.m = as.numeric(d18O.drift.trend$coefficients[2])
-    dD.drift.trend = lm(dD.predict ~ Sample.sequence, data = data.QC)
+    dD.drift.trend = lm(dD.predict ~ Sample.sequence, data = data.stnd)
     dD.drift.m = as.numeric(dD.drift.trend$coefficients[2])
     
     # Iteratively bind each standards value and drift coefficient to preallocated data frame
-    d18O.differential = rbind(d18O.differential, c(mean(data.QC$d18O.predict), d18O.drift.m))
-    dD.differential = rbind(dD.differential, c(mean(data.QC$dD.predict), dD.drift.m))
+    d18O.differential = rbind(d18O.differential, c(mean(data.stnd$d18O.predict), d18O.drift.m))
+    dD.differential = rbind(dD.differential, c(mean(data.stnd$dD.predict), dD.drift.m))
   }
   
   # Rename columns and rows of dataframes for improved readability
   colnames(d18O.differential) = c('val', 'slope')
-  rownames(d18O.differential) = rownames(QC)
+  rownames(d18O.differential) = names(STNDs)
   colnames(dD.differential) = c('val', 'slope')
-  rownames(dD.differential) = rownames(QC)
+  rownames(dD.differential) = names(STNDs)
   
   # Estimate the trend and intercept for the change in drift coefficient with isotopic value
   d18O.diff.trend = lm(slope ~ val, data = d18O.differential)
@@ -38,7 +41,8 @@ drift.correct = function(iso.data, QC) {
   dD.diff.slope = dD.diff.trend$coefficients[2]
   
   # Calculate drift corrected isotopic values based on isotopic value and position in instrument 
-  # run sequence
+  # run sequence (in the future, may want to change this to be based off of $Time rather than 
+  # run sequence)
   d18O.drift.correct = iso.data$d18O.predict - 
     (d18O.diff.slope*iso.data$d18O.predict + d18O.diff.intercept)*seq(1:nrow(iso.data))
   dD.drift.correct = iso.data$dD.predict - 

@@ -1,13 +1,14 @@
 # Function to correct linear bias in isotopes based on known standards values
-bias.correct = function(d18O.data, dD.data, STND.loc, STND.val) {
+bias.correct = function(d18O.data, dD.data, STND.idx, STND.val) {
   
   # Preallocate matrix for measured standards values
   STND.measure = matrix(data = NA, nrow = nrow(STND.val), ncol = ncol(STND.val))
   
   # Iteratively calculate the mean measured isotopic values for each standard
-  for (i in 1:length(STND.loc)) {
-    STND.measure[i,] = c(mean(d18O.data[unlist(STND.loc[i])]), 
-                         mean(dD.data[unlist(STND.loc[i])]))
+  for (i in 1:length(STND.idx)) {
+    
+    STND.measure[i,] = c(mean(d18O.data[STND.idx[[i]]]), 
+                         mean(dD.data[STND.idx[[i]]]))
   }
   
   # Rename measured standards matrix for improved readability

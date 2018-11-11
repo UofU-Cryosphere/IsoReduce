@@ -25,12 +25,20 @@ iso.reduce = function(files.path, template.path) {
   QC.val = template.data[[4]]
   
   # Drift correct isotope data
-  drift.correction = drift.correct(data.reduce, QC.loc)
+  drift.correction = drift.correct(data.reduce, STND.loc)
   d18O.drift.correct = unlist(drift.correction[1])
   dD.drift.correct = unlist(drift.correction[2])
   
+  
+  STND.idx = vector(mode = "list", length = length(STND.loc))
+  for (i in 1:length(STND.loc)) {
+    STND.idx[[i]] = match(STND.loc[[i]], data.reduce$Sample.port)
+  }
+  
+  
+  
   # Correct linear offset in isotope data using values of known standards
-  bias.correction = bias.correct(d18O.drift.correct, dD.drift.correct, STND.loc, STND.val)
+  bias.correction = bias.correct(d18O.drift.correct, dD.drift.correct, STND.idx, STND.val)
   
   # Add drift- and offset- corrected data to 'data.reduce', and reorder for easier viewing
   data.reduce$d18O.correct = unlist(bias.correction[1])
@@ -45,6 +53,15 @@ iso.reduce = function(files.path, template.path) {
   # plot(d18O.drift.correct[unlist(STND.loc$P.mid)])
   # plot(d18O.drift.correct[unlist(STND.loc$P.zero)])
   # plot(d18O.drift.correct[unlist(STND.loc$P.depl)])
+  d18O.error = (data.reduce$d18O.correct[match(QC.loc, data.reduce$Sample.port)] - QC.val[1])
+  dD.error = (data.reduce$dD.correct[match(QC.loc, data.reduce$Sample.port)] - QC.val[2])
+  
+  
+  # Compare corrected QC sample values to their true values
+  
+  
+  
+  
   
   return(data.reduce)
 }
