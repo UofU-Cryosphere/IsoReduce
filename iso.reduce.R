@@ -1,5 +1,5 @@
 # Function for reducing isotope data within a given folder, based on a given tray template
-iso.reduce = function(files.path, template.path) {
+iso.reduce = function(files.paths, template.path) {
   
   # Source data reduction functions
   source('iso.combine.R')
@@ -9,10 +9,10 @@ iso.reduce = function(files.path, template.path) {
   source('template.read.R')
   
   # Names/path of files to be analyzed
-  files = list.files(files.path, pattern = '.csv', full.names = TRUE)
+  # files = list.files(files.path, pattern = '.csv', full.names = TRUE)
   
   # Concatenates an arbitrary number of Picarro .csv files into a single R dataframe
-  data.all = iso.combine(files)
+  data.all = iso.combine(files.paths)
   
   # Loop through sample injections to correct the data for sample memory effects
   data.reduce = iso.loop(data.all)
