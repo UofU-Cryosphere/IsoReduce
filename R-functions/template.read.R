@@ -52,11 +52,6 @@ template.read = function(template.path) {
   names(QC.loc) = QC.names
   
   
-  
-  
-  
-  
-  
   return(list(STND.loc, STND.val, QC.loc, QC.val))
   
 }

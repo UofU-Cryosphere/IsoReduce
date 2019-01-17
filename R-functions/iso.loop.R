@@ -3,7 +3,7 @@
 iso.loop = function(data.all) {
   
   # Source the memory correction function
-  source('memory.correct.R')
+  source('R-functions/memory.correct.R')
   
   # Preallocate arrays for reduced data
   Sample.port = numeric()
