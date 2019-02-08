@@ -1,0 +1,25 @@
+---
+title: "Tests for Picarro HT mode"
+author: "Durban G Keeler"
+date: "Sept 14, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+# Input the directory containing the raw isotope data (subdirectory of 'Raw data')
+HP.file.path = "Data/Raw Data/Calibrations/calibration_2018Sept14/HP_test/HIDS2272_IsoWater_20180915_204841.csv"
+HT1.file.path = "Data/Raw Data/Calibrations/calibration_2018Sept14/HT_test/HIDS2272_HT_IsoWater_20180914_214604.csv"
+
+# Input the .Rdata file that contains the tray template sample/standards locations
+template.path = "Data/Tray templates/calibrate_20180914.xlsx"
+
+# Source and run the isotope reduction functions on given input files
+source('R-functions/iso.reduce.R')
+data.HP = iso.reduce(HP.file.path, template.path)
+
+```
