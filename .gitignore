@@ -37,3 +37,8 @@ Thumbs.db
 /cache/
 *.utf8.md
 *.knit.md
+
+# Unwanted compiled outputs from Markdown files
+.html
+.pdf
+.docx
