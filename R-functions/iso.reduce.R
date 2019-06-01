@@ -2,11 +2,11 @@
 iso.reduce = function(files.paths, template.path) {
 
   # Source data reduction functions
-  source('R-functions/iso.combine.R')
-  source('R-functions/iso.loop.R')
-  source('R-functions/drift.correct.R')
-  source('R-functions/bias.correct.R')
-  source('R-functions/template.read.R')
+  source(here('R-functions', 'iso.combine.R'))
+  source(here('R-functions', 'iso.loop.R'))
+  source(here('R-functions', 'drift.correct.R'))
+  source(here('R-functions', 'bias.correct.R'))
+  source(here('R-functions', 'template.read.R'))
 
   # Concatenates an arbitrary number of Picarro .csv files into a single R dataframe
   data.all = iso.combine(files.paths)

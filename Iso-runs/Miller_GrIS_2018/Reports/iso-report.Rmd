@@ -19,12 +19,22 @@ files.paths = list.files(here("Iso-runs", iso_run.name, "Raw_data/"),
 # files.paths = choose.files(caption = "Select .csv files of raw isotope data")
 
 # Input the .Rdata file that contains the tray template sample/standards locations
-template.path = list.files(here("Tray-template"), full.names = TRUE)
+template.path = list.files(here("Iso-runs", iso_run.name, "Tray-template"), full.names = TRUE)
 # template.path = choose.files(caption = 'Select Excel sample tray template file')
 
 # Source and run the isotope reduction functions on given input files
-source(file.path(dirname(dirname(here())), "R-functions", "iso.reduce.R"))
+source(here("R-functions", "iso.reduce.R"))
 # source('R-functions/iso.reduce.R')
-data = iso.reduce(files.paths, template.path)
+reduced.data = iso.reduce(files.paths, template.path)
+
+```
+
+
+```{r echo=FALSE}
+
+library(tidyverse)
+
+ggplot(reduced.data, aes(x = Sample.port, y = d18O.correct)) + geom_point(aes(group = d18O.method))
+
 
 ```
