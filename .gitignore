@@ -29,9 +29,9 @@ Thumbs.db
 
 # Unwanted program-generated files
 ##################################
-.Rhistory
-.Rapp.history
-.RData
+*.Rhistory
+*.Rapp.history
+*.RData
 .Rproj.user
 /*_cache/
 /cache/
@@ -39,6 +39,6 @@ Thumbs.db
 *.knit.md
 
 # Unwanted compiled outputs from Markdown files
-.html
-.pdf
-.docx
+*.html
+*.pdf
+*.docx
