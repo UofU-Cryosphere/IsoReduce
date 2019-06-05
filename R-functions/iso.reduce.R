@@ -20,6 +20,7 @@ iso.reduce = function(files.paths, template.path) {
   STND.val = template.data[[2]]
   QC.loc = template.data[[3]]
   QC.val = template.data[[4]]
+  IDs = template.data[[5]]
 
   # Drift correct isotope data
   drift.correction = drift.correct(data.reduce, STND.loc)
@@ -50,12 +51,32 @@ iso.reduce = function(files.paths, template.path) {
   # plot(d18O.drift.correct[unlist(STND.loc$P.mid)])
   # plot(d18O.drift.correct[unlist(STND.loc$P.zero)])
   # plot(d18O.drift.correct[unlist(STND.loc$P.depl)])
-  d18O.error = (data.reduce$d18O.correct[match(QC.loc, data.reduce$Sample.port)] - QC.val[1])
-  dD.error = (data.reduce$dD.correct[match(QC.loc, data.reduce$Sample.port)] - QC.val[2])
 
 
-  # Compare corrected QC sample values to their true values
+  ## Compare corrected QC sample values to their true values
 
+  # Get index of QC samples within data
+  QC.idx = match(QC.loc, data.reduce$Sample.port)
+
+
+  d18O.error = rep(0, times = length(QC.idx))
+  dD.error = rep(0, times = length(QC.idx))
+  if (length(QC.idx) > 1) {
+    for (i in 1:length(QC.idx)) {
+
+      QC.i = QC.val[i,]
+      d18O.error[i] = data.reduce$d18O.correct[QC.idx[i]] - QC.i[1]
+      dD.error[i] = data.reduce$dD.correct[QC.idx[i]] - QC.i[2]
+    }
+  } else {
+
+    d18O.error[i] = data.reduce$d18O.correct[QC.idx] - QC.val[1]
+    dD.error[i] = data.reduce$dD.correct[QC.idx] - QC.val[2]
+  }
+
+  # Convert reduced data to tibble format and combine with Sample numbers and IDs
+  data.reduce = as_tibble(data.reduce) %>%
+    left_join(IDs, by = c("Sample.port" = "Port_num"))
 
 
 
