@@ -3,6 +3,8 @@
 # effects from the previous injections. 'iso.data' are all injections from a given sample
 memory.correct = function(iso.data) {
 
+  # browser()
+
   # If the max difference in values is below a given threshold, do not correct injections
   # for memory effects, but output the raw injection values
   if (abs(max(iso.data$d.18_16.Mean) - min(iso.data$d.18_16.Mean)) < 0.2) {
@@ -16,19 +18,33 @@ memory.correct = function(iso.data) {
     # injection estimates for each sample
     result = tryCatch(
       {
-        d18O.method = as.character('Curve')
-        data.temp = data.frame(iso=numeric(nrow(iso.data)-1),
-                               Inj.Nr = integer(nrow(iso.data)-1))
-        data.temp$iso = diff(iso.data$d.18_16.Mean)
-        data.temp$Inj.Nr = seq(1:nrow(data.temp))
-        d18O.curve = nls(iso ~ a*Inj.Nr^(b), data = data.temp,
-                         start = list(a = head(data.temp$iso, 1)
-                                      - tail(data.temp$iso, 1) ,b = -2))
+
+
+        d18O.method = as.character("Curve")
+        data.tmp = data.frame(Inj.Nr = 1:nrow(iso.data))
+        data.tmp$iso = iso.data$d.18_16.Mean - tail(iso.data$d.18_16.Mean, 1)
+        d18O.curve = nls(iso ~ a*Inj.Nr^(b), data = data.tmp,
+                       start = list(a = head(data.tmp$iso, 1), b = -2))
         d18O.summ = summary(d18O.curve)
         a = d18O.summ$coefficients[1,1]
         b = d18O.summ$coefficients[2,1]
-        e = a*b*20^(b+1)
-        d18O.correct = iso.data$d.18_16.Mean - a*b*iso.data$Inj.Nr^(b+1) + e
+
+        d18O.correct = iso.data$d.18_16.Mean - a*iso.data$Inj.Nr^(b)
+
+
+        # d18O.method = as.character('Curve')
+        # data.temp = data.frame(iso=numeric(nrow(iso.data)-1),
+        #                        Inj.Nr = integer(nrow(iso.data)-1))
+        # data.temp$iso = diff(iso.data$d.18_16.Mean)
+        # data.temp$Inj.Nr = seq(1:nrow(data.temp))
+        # d18O.curve = nls(iso ~ a*Inj.Nr^(b), data = data.temp,
+        #                  start = list(a = head(data.temp$iso, 1)
+        #                               - tail(data.temp$iso, 1) ,b = -2))
+        # d18O.summ = summary(d18O.curve)
+        # a = d18O.summ$coefficients[1,1]
+        # b = d18O.summ$coefficients[2,1]
+        # e = a*b*20^(b+1)
+        # d18O.correct = iso.data$d.18_16.Mean - a*b*iso.data$Inj.Nr^(b+1) + e
 
         result = list(d18O.method, d18O.correct)
       },
@@ -48,9 +64,9 @@ memory.correct = function(iso.data) {
         Fz = Fz/coeff
 
         d18O.correct = vector(mode = 'numeric', length = nrow(iso.data)-2)
-        for (i in 3:nrow(iso.data)) {
-          d18O.correct[i-2] = (iso.data$d.18_16.Mean[i] - Fy*iso.data$d.18_16.Mean[i-1]
-                               - Fz*iso.data$d.18_16.Mean[i-2])/Fx
+        for (j in 3:nrow(iso.data)) {
+          d18O.correct[j-2] = (iso.data$d.18_16.Mean[j] - Fy*iso.data$d.18_16.Mean[j-1]
+                               - Fz*iso.data$d.18_16.Mean[j-2])/Fx
         }
         result = list(d18O.method, d18O.correct)
         return(result)
@@ -78,19 +94,32 @@ memory.correct = function(iso.data) {
     # injection estimates for each sample
     result = tryCatch(
       {
-        dD.method = as.character('Curve')
-        data.temp = data.frame(iso=numeric(nrow(iso.data)-1),
-                               Inj.Nr = integer(nrow(iso.data)-1))
-        data.temp$iso = diff(iso.data$d.D_H.Mean)
-        data.temp$Inj.Nr = seq(1:length(data.temp$iso))
-        dD.curve = nls(iso ~ a*Inj.Nr^(b), data = data.temp,
-                       start = list(a = head(data.temp$iso, 1) - tail(data.temp$iso, 1),
-                                    b = -2))
+
+        dD.method = as.character("Curve")
+        data.tmp = data.frame(Inj.Nr = 1:nrow(iso.data))
+        data.tmp$iso = iso.data$d.D_H.Mean - tail(iso.data$d.D_H.Mean, 1)
+        dD.curve = nls(iso ~ a*Inj.Nr^(b), data = data.tmp,
+                       start = list(a = head(data.tmp$iso, 1), b = -2))
         dD.summ = summary(dD.curve)
         a = dD.summ$coefficients[1,1]
         b = dD.summ$coefficients[2,1]
-        e = a*b*20^(b+1)
-        dD.correct = iso.data$d.D_H.Mean - a*b*iso.data$Inj.Nr^(b+1) + e
+
+        dD.correct = iso.data$d.D_H.Mean - a*iso.data$Inj.Nr^(b)
+
+
+        # dD.method = as.character('Curve')
+        # data.tmp = data.frame(iso=numeric(nrow(iso.data)-1),
+        #                        Inj.Nr = integer(nrow(iso.data)-1))
+        # data.tmp$iso = diff(iso.data$d.D_H.Mean)
+        # data.tmp$Inj.Nr = seq(1:length(data.tmp$iso))
+        # dD.curve = nls(iso ~ a*Inj.Nr^(b), data = data.tmp,
+        #                start = list(a = head(data.tmp$iso, 1) - tail(data.tmp$iso, 1),
+        #                             b = -2))
+        # dD.summ = summary(dD.curve)
+        # a = dD.summ$coefficients[1,1]
+        # b = dD.summ$coefficients[2,1]
+        # e = a*b*20^(b+1)
+        # dD.correct = iso.data$d.D_H.Mean - a*b*iso.data$Inj.Nr^(b+1) + e
 
         result = list(dD.method, dD.correct)
       },
@@ -124,15 +153,18 @@ memory.correct = function(iso.data) {
   dD.predict = mean(dD.correct)
   dD.sigma = sd(dD.correct)
 
-  # Diagnostic plots for debugging
-  plot(iso.data$d.18_16.Mean,
-       ylim = c(min(c(min(iso.data$d.18_16.Mean), min(d18O.correct))),
-                max(c(max(iso.data$d.18_16.Mean), max(d18O.correct)))))
-  points(d18O.correct, col = 'red')
-  plot(iso.data$d.D_H.Mean,
-       ylim = c(min(c(min(iso.data$d.D_H.Mean), min(dD.correct))),
-                max(c(max(iso.data$d.D_H.Mean), max(dD.correct)))))
-  points(dD.correct, col = 'red')
+  # # Diagnostic plots for debugging
+  # plot(iso.data$d.18_16.Mean,
+  #      ylim = c(min(c(min(iso.data$d.18_16.Mean), min(d18O.correct))),
+  #               max(c(max(iso.data$d.18_16.Mean), max(d18O.correct)))))
+  # points(d18O.correct, col = 'red')
+  # lines(iso.data$Inj.Nr, rep(d18O.predict, times = nrow(iso.data)), col = 'red')
+  #
+  # plot(iso.data$d.D_H.Mean,
+  #      ylim = c(min(c(min(iso.data$d.D_H.Mean), min(dD.correct))),
+  #               max(c(max(iso.data$d.D_H.Mean), max(dD.correct)))))
+  # points(dD.correct, col = 'red')
+  # lines(iso.data$Inj.Nr, rep(dD.predict, times = nrow(iso.data)), col = 'red')
 
   # Return results as a list of final method used, corrected isotope values and estimated
   # error on correction for d18O and dD values

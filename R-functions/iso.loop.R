@@ -23,6 +23,7 @@ iso.loop = function(data.all) {
   for (i in 1:nrow(data.all)) {
     if (data.all$Sample[i] != sample.nr) { # Execute after change in sample number
       data.i = data.all[sample.row:(i-1),]
+      # browser()
       output = memory.correct(data.i)
       Sample.port = rbind(Sample.port, sample.nr)
       d18O.method = rbind(d18O.method, output[1])

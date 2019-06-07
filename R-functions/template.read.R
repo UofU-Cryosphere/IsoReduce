@@ -1,9 +1,8 @@
 template.read = function(template.path) {
 
   # Read in the template data from the .xlsx template file for the given run
+  library(readxl)
   template.data = read_excel(template.path, range = "L2:P107")
-  # library(readxl)
-  # template.data = read_excel(template.path, range = "L2:P107")
 
   # Remove ports with no samples
   template.data = template.data[complete.cases(template.data$Sample_num),]
