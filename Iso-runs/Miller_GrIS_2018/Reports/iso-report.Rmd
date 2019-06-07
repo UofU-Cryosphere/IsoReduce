@@ -55,11 +55,16 @@ library(sf)
 
 data.sf = st_as_sf(data.all, coords = c("Lon", "Lat"), 
                    crs = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
+
+ggplot(data.sf) + geom_sf(aes(color = dD.correct))
+
 ```
 
 
 ```{r}
 
+ggplot(data.all, aes(x = Elev, y = Temp, color = dD.correct)) + geom_point() + 
+  scale_color_viridis_c()
 
 ```
 
