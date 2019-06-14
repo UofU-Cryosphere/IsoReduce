@@ -7,7 +7,7 @@ output: html_notebook
 
 
 
-```{r echo=FALSE}
+```{r}
 
 library(here)
 library(tidyverse)
@@ -32,7 +32,7 @@ reduced.data = iso.reduce(files.paths, template.path)
 ```
 
 
-```{r echo=FALSE, message=FALSE}
+```{r message=FALSE}
 
 # Select only variables of interest (and only processed samples)
 data = reduced.data %>% 
@@ -49,22 +49,47 @@ data.all = left_join(data, field.data, by = "Sample_ID")
 ```
 
 
-```{r}
+```{r message=FALSE}
 
 library(sf)
+# library(gganimate)
 
 data.sf = st_as_sf(data.all, coords = c("Lon", "Lat"), 
                    crs = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
 
-ggplot(data.sf) + geom_sf(aes(color = dD.correct))
+plot.dD = ggplot(data.sf) + geom_sf(aes(color = dD.correct), size = 3) + scale_color_viridis_c()
+plot.d18O = ggplot(data.sf) + geom_sf(aes(color = d18O.correct), size = 3) + scale_color_viridis_c()
+
+# library(cowplot)
+# p = plot_grid(plot.d18O, plot.dD, labels = "auto")
+
+library(patchwork)
+plot.dD + plot.d18O
+
+
 
 ```
 
 
+
 ```{r}
 
-ggplot(data.all, aes(x = Elev, y = Temp, color = dD.correct)) + geom_point() + 
+# Spatial plots of isotopes
+# ggplot(data.all, aes(x = Lon, y = Lat, color = dD.correct)) + geom_point() + scale_color_viridis_c()
+
+ggplot(data.all, aes(x = Elev, y = Temp, color = dD.correct)) + geom_point(size = 4, na.rm = TRUE) + 
   scale_color_viridis_c()
+
+ggplot(data.all, aes(x = Temp)) + geom_point(aes(y = dD.correct), size = 3, na.rm = TRUE)
+
+ggplot(data.all, aes(x = Temp)) + geom_point(aes(y = d18O.correct), size = 3, na.rm = TRUE)
+
+
+mwl = tibble(d18O = seq(min(data.all$d18O.correct), max(data.all$d18O.correct), by = 0.1)) %>%
+  mutate(dD = 8.0*d18O + 10)
+ggplot(data.all, aes(x = d18O.correct, y = dD.correct)) + 
+  geom_line(data = mwl, aes(x = d18O, y = dD), color = 'red', size = 2) + geom_point(color = 'black') + 
+  stat_smooth(method = 'lm', size = 0.5, alpha = 0.5, color = 'black', se = FALSE) + ggtitle("Meteoric water line")
 
 ```
 
