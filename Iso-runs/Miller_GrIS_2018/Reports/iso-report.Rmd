@@ -65,15 +65,11 @@ plot.d18O = ggplot(data.sf) + geom_sf(aes(color = d18O.correct), size = 3) + sca
 
 library(patchwork)
 plot.dD + plot.d18O
-
-
-
 ```
 
 
 
 ```{r}
-
 # Spatial plots of isotopes
 # ggplot(data.all, aes(x = Lon, y = Lat, color = dD.correct)) + geom_point() + scale_color_viridis_c()
 
@@ -90,7 +86,6 @@ mwl = tibble(d18O = seq(min(data.all$d18O.correct), max(data.all$d18O.correct), 
 ggplot(data.all, aes(x = d18O.correct, y = dD.correct)) + 
   geom_line(data = mwl, aes(x = d18O, y = dD), color = 'red', size = 2) + geom_point(color = 'black') + 
   stat_smooth(method = 'lm', size = 0.5, alpha = 0.5, color = 'black', se = FALSE) + ggtitle("Meteoric water line")
-
 ```
 
 
