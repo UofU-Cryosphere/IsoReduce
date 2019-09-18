@@ -9,7 +9,7 @@ iso.reduce = function(files.paths, template.path) {
   source(here('R-functions', 'template.read.R'))
 
   # Concatenates an arbitrary number of Picarro .csv files into a single R dataframe
-  data.all = iso.combine(files.paths)
+  data.all = as_tibble(iso.combine(files.paths))
 
   # Loop through sample injections to correct the data for sample memory effects
   data.reduce = iso.loop(data.all)
@@ -39,10 +39,9 @@ iso.reduce = function(files.paths, template.path) {
   bias.correction = bias.correct(d18O.drift.correct, dD.drift.correct, STND.idx, STND.val)
 
   # Add drift- and offset- corrected data to 'data.reduce', and reorder for easier viewing
-  data.reduce$d18O.correct = unlist(bias.correction[1])
-  data.reduce$dD.correct = unlist(bias.correction[2])
-  data.reduce = data.reduce[c('Sample.port', 'd18O.correct', 'd18O.sigma', 'd18O.method',
-                              'd18O.predict', 'dD.correct', 'dD.sigma', 'dD.method','dD.predict')]
+  # (also drop the memory-only corrected values)
+  data.reduce = data.reduce %>% mutate(d18O.correct = unlist(bias.correction[1]),
+                                       dD.correct = unlist(bias.correction[2]))
 
   # # Diagnostics to check drif corrections
   # plot(dD.drift.correct[unlist(STND.loc$P.mid)])
@@ -74,9 +73,11 @@ iso.reduce = function(files.paths, template.path) {
     dD.error[i] = data.reduce$dD.correct[QC.idx] - QC.val[2]
   }
 
-  # Convert reduced data to tibble format and combine with Sample numbers and IDs
-  data.reduce = as_tibble(data.reduce) %>%
-    left_join(IDs, by = c("Sample.port" = "Port_num"))
+  # Add Sample numbers and IDs via left-join,
+  # and select only columns of interest to export
+  data.reduce = data.reduce %>%
+    left_join(IDs, by = c("Sample.port" = "Port_num")) %>%
+    select(Sample_num, Sample_ID, d18O.correct, d18O.sigma, d18O.method, dD.correct, dD.sigma, dD.method)
 
 
 
