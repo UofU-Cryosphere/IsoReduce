@@ -71,7 +71,7 @@ iso.loop = function(data.all) {
     }
   }
 
-  # Place reduced data into data frame (numeric and factor classes)
+  # Place reduced data into tibble (numeric and factor classes)
   data.reduce = tibble(Sample.port = as.numeric(Sample.port), d18O.method =
                              factor(d18O.method, c('Mix', 'Curve', 'Curve-fail')), d18O.predict =
                              as.numeric(d18O.predict), d18O.sigma = as.numeric(d18O.sigma),
