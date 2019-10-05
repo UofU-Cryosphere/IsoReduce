@@ -10,17 +10,24 @@
 memory.correct = function(iso.data, data.tail) {
 
   # Define coefficient weights based off the first 4 terms of a geometric series
-  k = 1/4
+  k = 1/12
   c0 = k
   c1 = k^2
   c2 = k^3
-  c3 = k^4
-  norm.factor = c0 + c1 + c2 + c3
-
+  norm.factor = c0 + c1 + c2
   F0 = c0/norm.factor
   F1 = c1/norm.factor
   F2 = c2/norm.factor
-  F3 = c3/norm.factor
+  # k = 1/4
+  # c0 = k
+  # c1 = k^2
+  # c2 = k^3
+  # c3 = k^4
+  # norm.factor = c0 + c1 + c2 + c3
+  # F0 = c0/norm.factor
+  # F1 = c1/norm.factor
+  # F2 = c2/norm.factor
+  # F3 = c3/norm.factor
 
 
   data.bind = rbind(data.tail, iso.data)
@@ -28,15 +35,17 @@ memory.correct = function(iso.data, data.tail) {
 
 
   if (nrow(data.bind) > nrow(iso.data) &&
-    max(data.bind$d.18_16.Mean)-min(data.bind$d.18_16.Mean) < 3) {
+    max(data.bind$d.18_16.Mean)-min(data.bind$d.18_16.Mean) < 5) {
 
     d18O.method = as.character("Mix")
     d18O.correct = vector(mode = 'numeric', length = nrow(iso.data))
 
       for (i in 4:nrow(data.bind)) {
 
-        d18O.correct[i-3] = (data.bind$d.18_16.Mean[i] - F1*data.bind$d.18_16.Mean[i-1] -
-                               F2*data.bind$d.18_16.Mean[i-2] - F3*data.bind$d.18_16.Mean[i-3])/F0
+        d18O.correct[i-3] = (1/F0)*(data.bind$d.18_16.Mean[i] - F1*data.bind$d.18_16.Mean[i-1] -
+                                      F2*data.bind$d.18_16.Mean[i-2])
+        # d18O.correct[i-3] = (1/F0)*(data.bind$d.18_16.Mean[i] - F1*data.bind$d.18_16.Mean[i-1] -
+        #                        F2*data.bind$d.18_16.Mean[i-2] - F3*data.bind$d.18_16.Mean[i-3])
 
         result = list(d18O.method, d18O.correct)
       }
@@ -70,8 +79,11 @@ memory.correct = function(iso.data, data.tail) {
 
           for (i in 4:nrow(iso.data)) {
 
-            d18O.correct[i-3] = (iso.data$d.18_16.Mean[i] - F1*iso.data$d.18_16.Mean[i-1] -
-                                   F2*iso.data$d.18_16.Mean[i-2] - F3*iso.data$d.18_16.Mean[i-3])/F0
+            d18O.correct[i-3] = (1/F0)*(data.bind$d.18_16.Mean[i] -
+                                          F1*data.bind$d.18_16.Mean[i-1] -
+                                          F2*data.bind$d.18_16.Mean[i-2])
+            # d18O.correct[i-3] = (iso.data$d.18_16.Mean[i] - F1*iso.data$d.18_16.Mean[i-1] -
+            #                        F2*iso.data$d.18_16.Mean[i-2] - F3*iso.data$d.18_16.Mean[i-3])/F0
           }
 
 
@@ -89,15 +101,17 @@ memory.correct = function(iso.data, data.tail) {
 
 
   if (nrow(data.bind) > nrow(iso.data) &&
-      max(data.bind$d.D_H.Mean)-min(data.bind$d.D_H.Mean) < 25) {
+      max(data.bind$d.D_H.Mean)-min(data.bind$d.D_H.Mean) < 50) {
 
     dD.method = as.character("Mix")
     dD.correct = vector(mode = 'numeric', length = nrow(iso.data))
 
     for (i in 4:nrow(data.bind)) {
 
-      dD.correct[i-3] = (data.bind$d.D_H.Mean[i] - F1*data.bind$d.D_H.Mean[i-1] -
-                             F2*data.bind$d.D_H.Mean[i-2] - F3*data.bind$d.D_H.Mean[i-3])/F0
+      dD.correct[i-3] = (1/F0)*(data.bind$d.D_H.Mean[i] - F1*data.bind$d.D_H.Mean[i-1] -
+                                    F2*data.bind$d.D_H.Mean[i-2])
+      # dD.correct[i-3] = (data.bind$d.D_H.Mean[i] - F1*data.bind$d.D_H.Mean[i-1] -
+      #                        F2*data.bind$d.D_H.Mean[i-2] - F3*data.bind$d.D_H.Mean[i-3])/F0
 
       result = list(dD.method, dD.correct)
     }
@@ -131,8 +145,10 @@ memory.correct = function(iso.data, data.tail) {
 
         for (i in 4:nrow(iso.data)) {
 
-          dD.correct[i-3] = (iso.data$d.D_H.Mean[i] - F1*iso.data$d.D_H.Mean[i-1] -
-                                 F2*iso.data$d.D_H.Mean[i-2] - F3*iso.data$d.D_H.Mean[i-3])/F0
+          dD.correct[i-3] = (1/F0)*(data.bind$d.D_H.Mean[i] - F1*data.bind$d.D_H.Mean[i-1] -
+                                      F2*data.bind$d.D_H.Mean[i-2])
+          # dD.correct[i-3] = (iso.data$d.D_H.Mean[i] - F1*iso.data$d.D_H.Mean[i-1] -
+          #                        F2*iso.data$d.D_H.Mean[i-2] - F3*iso.data$d.D_H.Mean[i-3])/F0
         }
 
 
@@ -150,20 +166,20 @@ memory.correct = function(iso.data, data.tail) {
 
 
 
-  # # Diagnostic plots for debugging
-  # plot(iso.data$d.18_16.Mean,
-  #      ylim = c(min(c(min(iso.data$d.18_16.Mean), min(d18O.correct))),
-  #               max(c(max(iso.data$d.18_16.Mean), max(d18O.correct)))))
-  # points(d18O.correct, col = 'red')
-  # lines(iso.data$Inj.Nr, rep(d18O.predict, times = nrow(iso.data)), col = 'red')
-  #
-  # plot(iso.data$d.D_H.Mean,
-  #      ylim = c(min(c(min(iso.data$d.D_H.Mean), min(dD.correct))),
-  #               max(c(max(iso.data$d.D_H.Mean), max(dD.correct)))))
-  # points(dD.correct, col = 'red')
-  # lines(iso.data$Inj.Nr, rep(dD.predict, times = nrow(iso.data)), col = 'red')
+  # Diagnostic plots for debugging
+  plot(iso.data$d.18_16.Mean,
+       ylim = c(min(c(min(iso.data$d.18_16.Mean), min(d18O.correct))),
+                max(c(max(iso.data$d.18_16.Mean), max(d18O.correct)))))
+  points(d18O.correct, col = 'red')
+  lines(iso.data$Inj.Nr, rep(d18O.predict, times = nrow(iso.data)), col = 'red')
 
+  plot(iso.data$d.D_H.Mean,
+       ylim = c(min(c(min(iso.data$d.D_H.Mean), min(dD.correct))),
+                max(c(max(iso.data$d.D_H.Mean), max(dD.correct)))))
+  points(dD.correct, col = 'red')
+  lines(iso.data$Inj.Nr, rep(dD.predict, times = nrow(iso.data)), col = 'red')
 
+browser()
 
   # Return results as a list of final method used, corrected isotope values and estimated
   # error on correction for d18O and dD values

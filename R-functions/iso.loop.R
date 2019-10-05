@@ -1,4 +1,4 @@
-## For loop function to calculate mean isotope values for all samples using iso.curve function
+## For loop function to calculate mean isotope values for all samples using memory.correct function
 
 iso.loop = function(data.all) {
 
