@@ -33,7 +33,8 @@ iso.loop = function(data.all) {
       }
 
       # Correct injection values for memory effects
-      output = memory.correct(data.i, data.tail)
+      output = memory.correct(data.i)
+      # output = memory.correct(data.i, data.tail)
 
       # Add most recent values to the final data vectors
       Sample.port = rbind(Sample.port, sample.nr)
@@ -58,7 +59,8 @@ iso.loop = function(data.all) {
       }
 
       # Correct injection values for memory effects
-      output = memory.correct(data.i, data.tail)
+      output = memory.correct(data.i)
+      # output = memory.correct(data.i, data.tail)
 
       # Add most recent values to the final data vectors
       Sample.port = rbind(Sample.port, sample.nr)

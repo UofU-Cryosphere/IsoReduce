@@ -1,54 +1,25 @@
 # Function to correct isotope values of individual sample injections for memory
 # effects from the previous injections.
-# 'iso.data' are all injections from a given sample, while 'data.tail' are the
-# trailing 3 injections from the last sample.
+# 'iso.data' are all injections from a given sample, while 'data.tail' are
+# trailing injections from the last sample.
 # For combined datasets with sufficiently small spreads in isotope values, this
-# function uses a 4-component geometric series mixing model.
+# function uses a multi-component geometric series mixing model.
 # For datasets with a large spread in values, it switches to a curve-fitting routine
 # based on a power series.
 
-memory.correct = function(iso.data, data.tail) {
+memory.correct = function(iso.data) {
 
-  # Define coefficient weights based off the first 4 terms of a geometric series
-  k = 1/12
-  c0 = k
-  c1 = k^2
-  c2 = k^3
-  norm.factor = c0 + c1 + c2
-  F0 = c0/norm.factor
-  F1 = c1/norm.factor
-  F2 = c2/norm.factor
-  # k = 1/4
-  # c0 = k
-  # c1 = k^2
-  # c2 = k^3
-  # c3 = k^4
-  # norm.factor = c0 + c1 + c2 + c3
-  # F0 = c0/norm.factor
-  # F1 = c1/norm.factor
-  # F2 = c2/norm.factor
-  # F3 = c3/norm.factor
+  source(here("R-functions/mixing_model.R"))
+  r = 1/2
+  num.components = 3
 
-
-  data.bind = rbind(data.tail, iso.data)
-
-
-
-  if (nrow(data.bind) > nrow(iso.data) &&
-    max(data.bind$d.18_16.Mean)-min(data.bind$d.18_16.Mean) < 5) {
+  if (max(iso.data$d.18_16.Mean)-min(iso.data$d.18_16.Mean) < 0.5) {
 
     d18O.method = as.character("Mix")
-    d18O.correct = vector(mode = 'numeric', length = nrow(iso.data))
+    d18O.correct = mixing_model(iso.data$d.18_16.Mean, r, num.components)
 
-      for (i in 4:nrow(data.bind)) {
+    result = list(d18O.method, d18O.correct)
 
-        d18O.correct[i-3] = (1/F0)*(data.bind$d.18_16.Mean[i] - F1*data.bind$d.18_16.Mean[i-1] -
-                                      F2*data.bind$d.18_16.Mean[i-2])
-        # d18O.correct[i-3] = (1/F0)*(data.bind$d.18_16.Mean[i] - F1*data.bind$d.18_16.Mean[i-1] -
-        #                        F2*data.bind$d.18_16.Mean[i-2] - F3*data.bind$d.18_16.Mean[i-3])
-
-        result = list(d18O.method, d18O.correct)
-      }
     } else {
 
       # Attempt memory correction using a power series optimized using the individual
@@ -76,15 +47,7 @@ memory.correct = function(iso.data, data.tail) {
           d18O.method = as.character("Curve-fail")
 
           d18O.correct = vector(mode = 'numeric', length = nrow(iso.data)-3)
-
-          for (i in 4:nrow(iso.data)) {
-
-            d18O.correct[i-3] = (1/F0)*(data.bind$d.18_16.Mean[i] -
-                                          F1*data.bind$d.18_16.Mean[i-1] -
-                                          F2*data.bind$d.18_16.Mean[i-2])
-            # d18O.correct[i-3] = (iso.data$d.18_16.Mean[i] - F1*iso.data$d.18_16.Mean[i-1] -
-            #                        F2*iso.data$d.18_16.Mean[i-2] - F3*iso.data$d.18_16.Mean[i-3])/F0
-          }
+          d18O.correct = mixing_model(iso.data$d.18_16.Mean, r, num.components)
 
 
           result = list(d18O.method, d18O.correct)
@@ -99,22 +62,13 @@ memory.correct = function(iso.data, data.tail) {
   d18O.sigma = sd(d18O.correct)
 
 
-
-  if (nrow(data.bind) > nrow(iso.data) &&
-      max(data.bind$d.D_H.Mean)-min(data.bind$d.D_H.Mean) < 50) {
+  if (max(iso.data$d.D_H.Mean)-min(iso.data$d.D_H.Mean) < 4) {
 
     dD.method = as.character("Mix")
-    dD.correct = vector(mode = 'numeric', length = nrow(iso.data))
+    dD.correct = mixing_model(iso.data$d.D_H.Mean, r, num.components)
 
-    for (i in 4:nrow(data.bind)) {
+    result = list(dD.method, dD.correct)
 
-      dD.correct[i-3] = (1/F0)*(data.bind$d.D_H.Mean[i] - F1*data.bind$d.D_H.Mean[i-1] -
-                                    F2*data.bind$d.D_H.Mean[i-2])
-      # dD.correct[i-3] = (data.bind$d.D_H.Mean[i] - F1*data.bind$d.D_H.Mean[i-1] -
-      #                        F2*data.bind$d.D_H.Mean[i-2] - F3*data.bind$d.D_H.Mean[i-3])/F0
-
-      result = list(dD.method, dD.correct)
-    }
   } else {
 
     # Attempt memory correction using a power series optimized using the individual
@@ -141,15 +95,7 @@ memory.correct = function(iso.data, data.tail) {
       error = function(err) {
         dD.method = as.character("Curve-fail")
 
-        dD.correct = vector(mode = 'numeric', length = nrow(iso.data)-3)
-
-        for (i in 4:nrow(iso.data)) {
-
-          dD.correct[i-3] = (1/F0)*(data.bind$d.D_H.Mean[i] - F1*data.bind$d.D_H.Mean[i-1] -
-                                      F2*data.bind$d.D_H.Mean[i-2])
-          # dD.correct[i-3] = (iso.data$d.D_H.Mean[i] - F1*iso.data$d.D_H.Mean[i-1] -
-          #                        F2*iso.data$d.D_H.Mean[i-2] - F3*iso.data$d.D_H.Mean[i-3])/F0
-        }
+        dD.correct = mixing_model(iso.data$d.D_H.Mean, r, num.components)
 
 
         result = list(dD.method, dD.correct)
@@ -164,22 +110,27 @@ memory.correct = function(iso.data, data.tail) {
   dD.sigma = sd(dD.correct)
 
 
-
-
-  # Diagnostic plots for debugging
-  plot(iso.data$d.18_16.Mean,
-       ylim = c(min(c(min(iso.data$d.18_16.Mean), min(d18O.correct))),
-                max(c(max(iso.data$d.18_16.Mean), max(d18O.correct)))))
-  points(d18O.correct, col = 'red')
-  lines(iso.data$Inj.Nr, rep(d18O.predict, times = nrow(iso.data)), col = 'red')
-
-  plot(iso.data$d.D_H.Mean,
-       ylim = c(min(c(min(iso.data$d.D_H.Mean), min(dD.correct))),
-                max(c(max(iso.data$d.D_H.Mean), max(dD.correct)))))
-  points(dD.correct, col = 'red')
-  lines(iso.data$Inj.Nr, rep(dD.predict, times = nrow(iso.data)), col = 'red')
-
-browser()
+  # # Diagnostic plots for debugging
+  # plot(iso.data$Inj.Nr, iso.data$d.18_16.Mean,
+  #      ylim = c(min(c(min(iso.data$d.18_16.Mean), min(d18O.correct))),
+  #               max(c(max(iso.data$d.18_16.Mean), max(d18O.correct)))))
+  # if (length(d18O.correct) < nrow(iso.data)) {
+  #   points(num.components:nrow(iso.data), d18O.correct, col = 'red')
+  # } else {
+  #   points(iso.data$Inj.Nr, d18O.correct, col = 'red')
+  # }
+  # lines(iso.data$Inj.Nr, rep(d18O.predict, times = nrow(iso.data)), col = 'red')
+  #
+  # plot(iso.data$Inj.Nr ,iso.data$d.D_H.Mean,
+  #      ylim = c(min(c(min(iso.data$d.D_H.Mean), min(dD.correct))),
+  #               max(c(max(iso.data$d.D_H.Mean), max(dD.correct)))))
+  # if (length(dD.correct) < nrow(iso.data)) {
+  #   points(num.components:nrow(iso.data), dD.correct, col = 'red')
+  # } else {
+  #   points(iso.data$Inj.Nr, dD.correct, col = 'red')
+  # }
+  # lines(iso.data$Inj.Nr, rep(dD.predict, times = nrow(iso.data)), col = 'red')
+  # browser()
 
   # Return results as a list of final method used, corrected isotope values and estimated
   # error on correction for d18O and dD values
