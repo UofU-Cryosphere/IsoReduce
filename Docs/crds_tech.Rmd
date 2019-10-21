@@ -1,0 +1,141 @@
+---
+title: "Using the Picarro CRDS Isotope Analyzer"
+author: "Durban G. Keeler"
+date: "10/21/2019"
+output: 
+  ioslides_presentation:
+    smaller: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Review of stable water isotopes
+
+Testing of LaTex math equations
+
+$$
+\delta = \left[ \frac{R_{sample}}{R_{standard}} - 1 \right]
+$$
+
+$$
+\delta D = 8\delta^{18}O + 10 \:^0\!\!/\!_{00} 
+$$
+
+## How CRDS works {.columns-2}
+
+- Tunable laser (controlled by wavelength monitor)
+  - Tuned to absorption spectra of target species
+- Laser circulates in cavity (~20 km pathlength)
+- Laser shuts off and laser light leaks out (ring down)
+  - Partially transparent mirror to photo dector
+  - Rate of intesnity decay proportional to concentration of interested species
+- Permits detection sensitivity up to parts-per-billion
+
+
+```{r, out.width = "95%", fig.cap= "Courtesy of Picarro (2018)", echo=FALSE}
+knitr::include_graphics("Figures/crds-diagram.jpg")
+```
+
+## Sample preparation
+
+## Vial preparation
+
+- Minimize headspace
+- Ensure no cross-contamination between samples
+- Ensure proper fit/closure of vial caps
+
+## Isotope standards
+
+- Minimize ambient exposure
+- Ensure tight seal with parafilm after replacing lid
+
+## Tray template
+
+
+
+## Operating procedures
+
+**Do not attempt to operate the Picarro without either the lab manager or Dr. Rupper present!**
+
+You will primarily use two applications when measuring and recording isotope data: the "Autosampler Control" and the "Coordinator Launcher"
+- The first tells the Picarro where the samples are, how many injections to perform, etc.
+- The second controls the measurement and recording the data analysis
+
+The next few slides walk through the process of setting up and running isotope analyses
+
+*Note: These instructions assume the instrument is already properly booted, with the CRDS Data Viewer open and actively measuring values. 
+If this is not the case, see the lab manager or Dr. Rupper for assistance.*
+
+---
+
+```{r, out.width = "100%", fig.cap= "", echo=FALSE}
+knitr::include_graphics("Figures/Opening-screen.PNG")
+```
+
+## 1. Launch the "Autosampler Control" application
+
+```{r, out.width = "95%", fig.cap= "", echo=FALSE}
+knitr::include_graphics("Figures/Opening-screen.PNG")
+```
+
+---
+
+This launches the following window
+
+```{r, out.width = "100%", fig.cap= "", echo=FALSE}
+knitr::include_graphics("Figures/autosampler.PNG")
+```
+
+## 2. Configure the sample/injection layout
+
+- The layout will be based on your previously-completed tray template
+- Use the "DGK_norm" method for all injections
+- Standards should have 10 injections per vial
+- Samples and QCs should have 5 injections per vial
+- Remember that port numbers and sample numbers are usually not the same thing
+- Make sure the box is checked for each line you wish to actually run
+
+## 3. Launch the "Coordinator Launcher" application
+
+```{r, out.width = "75%", fig.cap= "", echo=FALSE}
+knitr::include_graphics("Figures/autosampler.PNG")
+```
+
+Prior to launching the Coordinator, ensure that the "Autosampler Control" window is still open
+
+## {.columns-2}
+
+- The Coordinator has 3 possible modes of operation: "High precision", "high throughput", and "manual injections"
+  - High precision is...more precise
+  - High throughput is faster (takes ~4 minutes per injection compared to HP's 9 minutes)
+  - Manual injections does not use the autosampler (you likely will never use this mode)
+- Select a mode and click "Launch"
+
+```{r, out.width = "95%", fig.cap= "", echo=FALSE}
+knitr::include_graphics("Figures/coordinator-select.PNG")
+```
+
+---
+
+The below window should then launch, with updating information on the current state of analysis
+
+```{r, out.width = "100%", fig.cap= "", echo=FALSE}
+knitr::include_graphics("Figures/coordinator.PNG")
+```
+
+---
+
+Also note the filename at the top of the window. 
+Feel free to either keep the assigned default or change it to something else. 
+Just make sure you know what it is so you can find it later to copy the completed data.
+
+## 4. Start your isotope run
+
+- Return to the "Autosampler Control" window and press the "Run" button
+  - This will start the analysis (once the Coordinator has completed its initial start-up procedures)
+
+```{r, out.width = "85%", fig.cap= "", echo=FALSE}
+knitr::include_graphics("Figures/coordinator.PNG")
+```
