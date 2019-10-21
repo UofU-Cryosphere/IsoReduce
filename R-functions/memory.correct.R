@@ -10,10 +10,11 @@
 memory.correct = function(iso.data) {
 
   source(here("R-functions/mixing_model.R"))
+  source(here("R-functions/curve_fit.R"))
   r = 1/2
   num.components = 3
 
-  if (max(iso.data$d.18_16.Mean)-min(iso.data$d.18_16.Mean) < 0.5) {
+  if (abs(iso.data$d.18_16.Mean[1]-iso.data$d.18_16.Mean[nrow(iso.data)]) < 0.2) {
 
     d18O.method = as.character("Mix")
     d18O.correct = mixing_model(iso.data$d.18_16.Mean, r, num.components)
@@ -28,15 +29,7 @@ memory.correct = function(iso.data) {
         {
 
           d18O.method = as.character("Curve")
-          data.tmp = data.frame(Inj.Nr = 1:nrow(iso.data))
-          data.tmp$iso = iso.data$d.18_16.Mean - tail(iso.data$d.18_16.Mean, 1)
-          d18O.curve = nls(iso ~ a*Inj.Nr^(b), data = data.tmp,
-                           start = list(a = head(data.tmp$iso, 1), b = -2))
-          d18O.summ = summary(d18O.curve)
-          a = d18O.summ$coefficients[1,1]
-          b = d18O.summ$coefficients[2,1]
-
-          d18O.correct = iso.data$d.18_16.Mean - a*iso.data$Inj.Nr^(b)
+          d18O.correct = curve_fit(iso.data$d.18_16.Mean)
 
           result = list(d18O.method, d18O.correct)
         },
@@ -62,7 +55,7 @@ memory.correct = function(iso.data) {
   d18O.sigma = sd(d18O.correct)
 
 
-  if (max(iso.data$d.D_H.Mean)-min(iso.data$d.D_H.Mean) < 4) {
+  if (abs(iso.data$d.D_H.Mean[1]-iso.data$d.D_H.Mean[nrow(iso.data)]) < 2.5) {
 
     dD.method = as.character("Mix")
     dD.correct = mixing_model(iso.data$d.D_H.Mean, r, num.components)
@@ -77,15 +70,7 @@ memory.correct = function(iso.data) {
       {
 
         dD.method = as.character("Curve")
-        data.tmp = data.frame(Inj.Nr = 1:nrow(iso.data))
-        data.tmp$iso = iso.data$d.D_H.Mean - tail(iso.data$d.D_H.Mean, 1)
-        dD.curve = nls(iso ~ a*Inj.Nr^(b), data = data.tmp,
-                         start = list(a = head(data.tmp$iso, 1), b = -2))
-        dD.summ = summary(dD.curve)
-        a = dD.summ$coefficients[1,1]
-        b = dD.summ$coefficients[2,1]
-
-        dD.correct = iso.data$d.D_H.Mean - a*iso.data$Inj.Nr^(b)
+        dD.correct = curve_fit(iso.data$d.D_H.Mean)
 
         result = list(dD.method, dD.correct)
       },
@@ -109,27 +94,18 @@ memory.correct = function(iso.data) {
   dD.predict = mean(dD.correct)
   dD.sigma = sd(dD.correct)
 
-
-  # # Diagnostic plots for debugging
-  # plot(iso.data$Inj.Nr, iso.data$d.18_16.Mean,
-  #      ylim = c(min(c(min(iso.data$d.18_16.Mean), min(d18O.correct))),
-  #               max(c(max(iso.data$d.18_16.Mean), max(d18O.correct)))))
-  # if (length(d18O.correct) < nrow(iso.data)) {
-  #   points(num.components:nrow(iso.data), d18O.correct, col = 'red')
-  # } else {
-  #   points(iso.data$Inj.Nr, d18O.correct, col = 'red')
-  # }
-  # lines(iso.data$Inj.Nr, rep(d18O.predict, times = nrow(iso.data)), col = 'red')
+  # # Diagnostic plots
+  # plot(iso.data$Inj.Nr, iso.data$d.18_16.Mean, col = 'black', pch = 16,
+  #      ylim = c(min(min(iso.data$d.18_16.Mean),min(d18O.correct)),
+  #               max(max(iso.data$d.18_16.Mean),max(d18O.correct))))
+  # points((nrow(iso.data)-length(d18O.correct)+1):nrow(iso.data), d18O.correct, col = 'red', pch = 16)
+  # lines(iso.data$Inj.Nr, rep(d18O.predict, nrow(iso.data)), col = 'red', lty = 2)
   #
-  # plot(iso.data$Inj.Nr ,iso.data$d.D_H.Mean,
-  #      ylim = c(min(c(min(iso.data$d.D_H.Mean), min(dD.correct))),
-  #               max(c(max(iso.data$d.D_H.Mean), max(dD.correct)))))
-  # if (length(dD.correct) < nrow(iso.data)) {
-  #   points(num.components:nrow(iso.data), dD.correct, col = 'red')
-  # } else {
-  #   points(iso.data$Inj.Nr, dD.correct, col = 'red')
-  # }
-  # lines(iso.data$Inj.Nr, rep(dD.predict, times = nrow(iso.data)), col = 'red')
+  # plot(iso.data$Inj.Nr, iso.data$d.D_H.Mean, col = 'black', pch = 16,
+  #      ylim = c(min(min(iso.data$d.D_H.Mean),min(dD.correct)),
+  #               max(max(iso.data$d.D_H.Mean),max(dD.correct))))
+  # points((nrow(iso.data)-length(dD.correct)+1):nrow(iso.data), dD.correct, col = 'red', pch = 16)
+  # lines(iso.data$Inj.Nr, rep(dD.predict, nrow(iso.data)), col = 'red', lty = 2)
   # browser()
 
   # Return results as a list of final method used, corrected isotope values and estimated
