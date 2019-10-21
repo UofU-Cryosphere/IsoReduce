@@ -19,7 +19,7 @@ curve_fit = function (iso.data) {
   # plot(iso.data, ylim = c(min(c(iso.data,iso.correct)), max(c(iso.data, iso.correct))))
   # points(iso.correct, col = 'red', pch = 16)
   # lines(1:10, rep(mean(iso.correct),10), lty = 2, col = 'red')
-  # lines(1:10, rep(median(iso.correct),10), lty = 2, col = 'blue')
+  # # lines(1:10, rep(median(iso.correct),10), lty = 2, col = 'blue')
   # print(b)
   # browser()
 

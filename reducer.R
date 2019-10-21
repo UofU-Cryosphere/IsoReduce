@@ -2,6 +2,7 @@
 
 # Import required libraries
 library(tidyverse)
+library(readxl)
 library(here)
 
 # Select the .csv file containing the final raw data as outputed by the Picarro
