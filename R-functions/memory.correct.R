@@ -14,7 +14,7 @@ memory.correct = function(iso.data) {
   r = 1/2
   num.components = 3
 
-  if (abs(iso.data$d.18_16.Mean[1]-iso.data$d.18_16.Mean[nrow(iso.data)]) < 0.2) {
+  if (abs(iso.data$d.18_16.Mean[1]-iso.data$d.18_16.Mean[nrow(iso.data)]) <= 0.1) {
 
     d18O.method = as.character("Mix")
     d18O.correct = mixing_model(iso.data$d.18_16.Mean, r, num.components)
@@ -55,7 +55,7 @@ memory.correct = function(iso.data) {
   d18O.sigma = sd(d18O.correct)
 
 
-  if (abs(iso.data$d.D_H.Mean[1]-iso.data$d.D_H.Mean[nrow(iso.data)]) < 2.5) {
+  if (abs(iso.data$d.D_H.Mean[1]-iso.data$d.D_H.Mean[nrow(iso.data)]) <= 1.5) {
 
     dD.method = as.character("Mix")
     dD.correct = mixing_model(iso.data$d.D_H.Mean, r, num.components)

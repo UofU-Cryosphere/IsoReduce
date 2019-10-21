@@ -14,3 +14,9 @@ template.path = file.choose()
 # Source and run the isotope reduction functions on given input files
 source('R-functions/iso.reduce.R')
 reduced.data = iso.reduce(files.paths, template.path)
+
+# Plot d18O values of reduced data
+reduced.data %>% ggplot(., aes(x=1:nrow(.), y=d18O.correct)) + geom_point()
+
+# Plot dD values of reduced data
+reduced.data %>% ggplot(., aes(x=1:nrow(.), y=dD.correct)) + geom_point()
