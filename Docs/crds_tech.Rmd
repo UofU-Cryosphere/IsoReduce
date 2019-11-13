@@ -9,6 +9,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
 ```
 
 ## Review of stable water isotopes
@@ -28,9 +29,9 @@ $$
 - Tunable laser (controlled by wavelength monitor)
   - Tuned to absorption spectra of target species
 - Laser circulates in cavity (~20 km pathlength)
-- Laser shuts off and laser light leaks out (ring down)
+- Laser light leaks out (ring down)
   - Partially transparent mirror to photo dector
-  - Rate of intesnity decay proportional to concentration of interested species
+  - Rate of intesnity decay proportional to concentration of target species
 - Permits detection sensitivity up to parts-per-billion
 
 
@@ -38,7 +39,7 @@ $$
 knitr::include_graphics("Figures/crds-diagram.jpg")
 ```
 
-## Sample preparation
+# Sample preparation
 
 ## Vial preparation
 
@@ -53,9 +54,13 @@ knitr::include_graphics("Figures/crds-diagram.jpg")
 
 ## Tray template
 
+```{r, out.width = "100%", fig.cap= "", echo=FALSE}
+knitr::include_graphics("Figures/tray-example.png")
+```
 
+# Operating procedures
 
-## Operating procedures
+---
 
 **Do not attempt to operate the Picarro without either the lab manager or Dr. Rupper present!**
 
@@ -128,8 +133,7 @@ knitr::include_graphics("Figures/coordinator.PNG")
 ---
 
 Also note the filename at the top of the window. 
-Feel free to either keep the assigned default or change it to something else. 
-Just make sure you know what it is so you can find it later to copy the completed data.
+Make sure you know what it is so you can find later find the completed analysis file and copy it to the external drive.
 
 ## 4. Start your isotope run
 
@@ -138,4 +142,130 @@ Just make sure you know what it is so you can find it later to copy the complete
 
 ```{r, out.width = "85%", fig.cap= "", echo=FALSE}
 knitr::include_graphics("Figures/coordinator.PNG")
+```
+
+
+## Data extraction
+
+After the Picarro completes analysis on all samples:
+
+- Exit out of the "Coordinator" window and then the "Autosampler Control" window
+- Save a copy of the .csv file to the designated USB drive (don't simply use your own)
+  - Files are saved in the `C:/IsotopeData/` folder
+  - Naming convention is "HIDS2272_IsoWater_*" with the starting date and time of the run
+
+# Data Reduction and IsoReduce
+
+--- 
+
+The concept of isotope data reduction is to take raw data (multiple measurements per injections, multiple injections per sample, etc.) and reduce those into a single measurement per sample, while correcting the data for any known biases or errors.
+`IsoReduce` is the custom U of U Cryosphere software built for this purpose.
+It coerrects for inter-injection memory, intra-run measurement drift, and systemic isotope biases using in-lab isotope standards, and averages corrected injections into a final single measurement for each sample.
+The reduction process is divided into three principle sub-routines: memory correction, drift correction, and measurement bias correction.
+
+## Memory correction
+
+Due to the nature of cavity ringdown spectroscopy, a given injection's value will be influenced by the preceding injection values. 
+IsoReduce uses two methods to correct for this. 
+The first is a geometric mixing model, which we use for corrections of samples with fairly similar isotopic values.
+The second is a power-series curve-fitting routine, which we use for samples with a wider spread in isotopic values.
+
+---
+
+### Geometric mixing model
+
+This assumes a given injection's measured value $\delta_i$ is a geometrically-weighted sum of the sample's true value $\delta_T$ and the measured injections preceding it.
+
+$$
+\delta_i = \frac{1}{\mathcal{F_N}} \left( \delta_T + \sum_{k=1}^n r^k \delta_{i-k} \right)
+$$
+
+$$
+\mathcal{F_N} = \sum_{k=0}^n r^k
+$$
+
+The equation for the injection's true value is therefore:
+
+$$
+\delta_T = \delta_i \sum_{k=0}^n r^k - \sum_{k=1}^n \delta_{i-k}
+$$
+
+---
+
+### Power-series curve fitting
+
+For samples with sufficiently large differences in isotopic value, the memory effects are more drastic, but also more predictable.
+We can leverage the larger spread and the observed exponential trend in the data to correct for the memory effect.
+We fit a power series curve ($Ax^{b}$) by optimizing the choice of the parameters $A$ and $b$ (where $x$ is the injection number), and use it to correct the injections for memory effects.
+
+---
+
+![](Figures/curve-correct.png)
+
+## Drift Correction
+
+Over time, CRDS instrument values can *drift* away from previously measured values, even if the true values remain unchanged. 
+This usually has to do with minor differences in the reference laser wavelength or electric current output.
+Although one of the primary advantages of the Picarro instruments over other CRDS competitors is the relatively low drift, we still provide corrections for any residual deviations.
+We do this by comparing the starting, stopping and (if present) intra-run isotope standard values for changes in measured value throughout the run.
+We then remove the time-interpolated drift effect from all sample injections.
+
+---
+
+```{r, echo=FALSE}
+data = tibble(Sample_num = 1:26, Sample_ID = c("STND1", "STND2", rep("smp",10), 
+                                               "STND1", "STND2", rep("smp",10), 
+                                               "STND1", "STND2"))
+STND1 = -235
+STND2 = -110
+smp1 = rnorm(10, mean = mean(c(STND1,STND2)), sd = abs(STND1-STND2)/4)
+smp2 = rnorm(10, mean = mean(c(STND1,STND2)), sd = abs(STND1-STND2)/4)
+data = data %>% mutate(dD = c(STND1, STND2, smp1, STND1+12, STND2+5, smp2, STND1+20, STND2+14))
+
+drift.plot = ggplot() + geom_point(filter(data, Sample_ID == "smp"), mapping = aes(x=Sample_num, y=dD)) + 
+  geom_point(filter(data, Sample_ID == "STND1"), mapping=aes(x=Sample_num, y=dD), color = 'red') + 
+  geom_point(filter(data, Sample_ID == "STND2"), mapping=aes(x=Sample_num, y=dD), color = 'red') + 
+  geom_smooth(filter(data, Sample_ID == "STND1"), mapping=aes(x=Sample_num, y=dD), 
+              color = 'red', method = 'lm', se = FALSE) + 
+  geom_smooth(filter(data, Sample_ID == "STND2"), mapping=aes(x=Sample_num, y=dD), 
+              color = 'red', method = 'lm', se = FALSE)
+print(drift.plot)
+```
+
+## Measurement bias
+
+In most cases, a measurement bias is introduced in isotope value estimates, where the measured values systemically differ from the true values.
+This is true even when the measurements are sufficiently precise and properly corrected for memory effects and drift effects.
+We therefore use the measured values of our known isotope standards to *standardize* the measured values of isotope samples to their true values, relative to the standards used.
+
+## Using IsoReduce
+
+- Go to https://github.com/UofU-Cryosphere/IsoReduce and change the branch to `iso-class`
+- Download the compressed repository to a location of your choosing and unzip it
+- The "Raw Data" folder contains some example isotope runs you can play around with
+- Use the "reducer.R" wrapper script to run the reduction software
+  - You may need to install some additional packages...
+
+---
+
+### Reducer.R
+
+```{r, eval=FALSE, echo=TRUE}
+# Script used to reduce isotope data based on the custom function 'iso.reduce'
+
+# Import required libraries
+library(tidyverse)
+library(readxl)
+library(here)
+library(tcltk)
+
+# Select the .csv file containing the final raw data as outputed by the Picarro
+files.paths = tk_choose.files(caption = "Select .csv Picarro file to reduce")
+
+# Select the .xlsx file containing the properly formatted and standardized tray template for this run
+template.path = tk_choose.files(caption = "Select .xslx Tray Template for selected Picarro data")
+
+# Source and run the isotope reduction functions on given input files
+source(here('R-functions/iso.reduce.R'))
+reduced.data = iso.reduce(files.paths, template.path)
 ```

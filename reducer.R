@@ -1,19 +1,17 @@
 # Script used to reduce isotope data based on the custom function 'iso.reduce'
 
+# Import required libraries
+library(tidyverse)
+library(readxl)
+library(here)
+library(tcltk)
 
+# Select the .csv file containing the final raw data as outputed by the Picarro
+files.paths = tk_choose.files(caption = "Select .csv Picarro file to reduce")
 
-# # Set working directory to location of this source file (the 'reducer.R' wrapper script)
-# script.dir = dirname(parent.frame(2)$ofile)
-# setwd(script.dir)
-
-# Input the directory containing the raw isotope data (subdirectory of 'Raw data')
-files.paths = choose.files(caption = "Select .csv files of raw isotope data")
-# files.paths = choose.files(caption = "Select .csv files of raw isotope data", 
-#                            filters = Filters[".csv"])
-
-# Input the .Rdata file that contains the tray template sample/standards locations
-template.path = choose.files(caption = 'Select Excel sample tray template file')
+# Select the .xlsx file containing the properly formatted and standardized tray template for this run
+template.path = tk_choose.files(caption = "Select .xslx Tray Template for selected Picarro data")
 
 # Source and run the isotope reduction functions on given input files
-source('R-functions/iso.reduce.R')
-data = iso.reduce(files.paths, template.path)
+source(here('R-functions/iso.reduce.R'))
+reduced.data = iso.reduce(files.paths, template.path)
