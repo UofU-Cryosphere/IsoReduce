@@ -1,0 +1,102 @@
+---
+title: "Picarro Practice samples"
+output: html_notebook
+---
+
+The samples we analyzed fall into 3 dinstinct groups: (1) Hawaii surface samples, (2) consumer water bottle samples, and (3) local Utah meteoric waters.
+The following sections investigate each of these sample groups for interesting patterns or noteworthy observations.
+
+## The full dataset
+
+Below is a plot of the full dataset (including standards) for both $\delta^{18}O$ and for $\delta D$. 
+
+```{r, echo=FALSE}
+# Import required libraries
+library(tidyverse)
+library(readxl)
+library(here)
+library(plotly)
+# library(ggmap)
+
+# Select the .csv file containing the final raw data as outputed by the Picarro
+files.paths = list.files(path = here("Raw Data/class-practice/"), 
+                         pattern = ".csv", full.names = TRUE)
+
+# Select the .xlsx file containing the properly formatted and standardized tray template for this run
+template.path = list.files(path = here("Raw Data/class-practice/"), 
+                         pattern = ".xlsx", full.names = TRUE)
+
+# Source and run the isotope reduction functions on given input files
+source('R-functions/iso.reduce.R')
+reduced.data = iso.reduce(files.paths, template.path)
+
+CIFA = c(-16.81766, -125.5073)
+QC.data = filter(reduced.data, Sample_num == "QC1")
+QC.resid = c(d18O = QC.data$d18O.correct-CIFA[1], dD = QC.data$dD.correct-CIFA[2])
+```
+
+To check the overall quality of the run, we look at the residuals between the measured QC values of CIFA and the true known values.
+The QC residuals are $\delta^{18}O =$ `r format(QC.resid[1], digits = 3)` and $\delta D =$ `r format(QC.resid[2], digits = 3)`.
+These differences are sufficiently low to give high confidence that our data correction and reduction did not cause any noteworthy errors.
+
+```{r}
+# Plot d18O values of reduced data
+d18O.plt = reduced.data %>% ggplot(., aes(x=Sample_ID, y=d18O.correct)) + 
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90)) + ylab("Corrected d18O values")
+ggplotly(d18O.plt)
+```
+
+```{r}
+# Plot dD values of reduced data
+dD.plt = reduced.data %>% ggplot(., aes(x=Sample_ID, y=dD.correct)) + 
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90)) + ylab("Corrected dD values")
+ggplotly(dD.plt)
+```
+
+Let's take a look at our samples compared to the global meteoric waterline.
+As a reminder, this is a globally-averaged line along which we would expect equilibrium fractionation to dominate.
+The global meteoric waterline (shown below in red) is given by the function
+$$
+\delta D = 8 \cdot \delta^{18}O + 10 \:^0\!\!/\!_{00}
+$$
+
+```{r}
+d18O.gmwl = -282:6
+dD.gmwl = 8*d18O.gmwl + 10
+GMWL = tibble(d18O = d18O.gmwl, dD = dD.gmwl)
+dx.plt = reduced.data %>% ggplot(., aes(x=d18O.correct, y=dD.correct, labels = Sample_ID)) + 
+  geom_point() + geom_line(data = GMWL, aes(x=d18O, y=dD), color = 'red')
+
+dx.plt = reduced.data %>% ggplot(., aes(x=d18O.correct, y=dD.correct)) + 
+  geom_point(aes(text = Sample_ID)) + geom_line(data = GMWL, aes(x=d18O, y=dD), color = 'red')
+ggplotly(dx.plt)
+```
+
+## Hawaii samples
+
+```{r, echo=FALSE}
+HA.data = reduced.data %>% filter(str_detect(Sample_ID, pattern = "HAN1")|str_detect(Sample_ID, pattern = "NPC")) %>% mutate(Sample_ID = as.factor(Sample_ID))
+
+HA.locs = tibble(Sample_ID = as.factor(c("HAN1", "NPC1", "NPC2", "NPC3", "NPC4", "NPC5", "NPC6")), 
+                 Latitude = c(22.212, 22.2142, 22.2113, 22.2091, 22.2088, 22.2088, 22.211), 
+                 Longitude = c(-159.59, -159.5897, -159.5944, -159.5979, -159.5984, -159.5991, -159.5944))
+
+HA.data = left_join(HA.data, HA.locs, by = "Sample_ID")
+```
+
+```{r}
+HA.plt = ggplot(HA.data, aes(x=Sample_ID, y=d18O.correct)) + 
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90)) + ylab("Corrected dD values")
+ggplotly(HA.plt)
+```
+
+```{r}
+# mymap = get_map(c(lon = -159.550, lat = 22.17), maptype = "satellite", source = "google")
+HA.map = ggplot(HA.data, aes(x=Longitude, y=Latitude, color = d18O.correct, labels = Sample_ID)) + 
+  geom_point() + scale_color_viridis_c() + theme_classic()
+ggplotly(HA.map)
+```
+

@@ -29,9 +29,9 @@ $$
 - Tunable laser (controlled by wavelength monitor)
   - Tuned to absorption spectra of target species
 - Laser circulates in cavity (~20 km pathlength)
-- Laser shuts off and laser light leaks out (ring down)
+- Laser light leaks out (ring down)
   - Partially transparent mirror to photo dector
-  - Rate of intesnity decay proportional to concentration of interested species
+  - Rate of intesnity decay proportional to concentration of target species
 - Permits detection sensitivity up to parts-per-billion
 
 
@@ -155,6 +155,8 @@ After the Picarro completes analysis on all samples:
   - Naming convention is "HIDS2272_IsoWater_*" with the starting date and time of the run
 
 # Data Reduction and IsoReduce
+
+--- 
 
 The concept of isotope data reduction is to take raw data (multiple measurements per injections, multiple injections per sample, etc.) and reduce those into a single measurement per sample, while correcting the data for any known biases or errors.
 `IsoReduce` is the custom U of U Cryosphere software built for this purpose.
